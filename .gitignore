@@ -1,0 +1,19 @@
+# Visual Studio files
+.vs/
+*.user
+*.suo
+
+# Build output
+bin/
+obj/
+
+# Secrets - never push these
+appsettings.json
+appsettings.Development.json
+
+# NuGet
+*.nupkg
+packages/
+
+# Logs
+*.log 
