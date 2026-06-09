@@ -7,6 +7,7 @@ using System.Security.Claims;
 namespace JobTracker.API.Controllers
 {
     [Route("api/[controller]")]
+    [Route("api/jobs/{jobId}/[controller]")]
     [ApiController]
     public class InterviewsController : ControllerBase
     {
@@ -19,11 +20,24 @@ namespace JobTracker.API.Controllers
             _interviewService = interviewService;
         }
 
-        private string GetUserId() =>
-            User.FindFirst(ClaimTypes.NameIdentifier)?.Value!;
+        private string GetUserId()
+        {
+            // Try standard claim first
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            // If null try sub claim (Identity uses this)
+            if (string.IsNullOrEmpty(userId))
+                userId = User.FindFirst("sub")?.Value;
+
+            // If still null try directly by name
+            if (string.IsNullOrEmpty(userId))
+                userId = User.Identity?.Name;
+
+            return userId!;
+        }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(int jobId)
+        public async Task<IActionResult> GetAll([FromRoute] int jobId)
         {
             try
             {
@@ -39,7 +53,7 @@ namespace JobTracker.API.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Create(
-            int jobId, [FromBody] CreateInterviewDto dto)
+            [FromRoute] int jobId, [FromBody] CreateInterviewDto dto)
         {
             try
             {
@@ -55,7 +69,7 @@ namespace JobTracker.API.Controllers
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(
-            int jobId, int id, [FromBody] UpdateInterviewDto dto)
+            [FromRoute] int jobId, int id, [FromBody] UpdateInterviewDto dto)
         {
             try
             {
@@ -70,7 +84,7 @@ namespace JobTracker.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int jobId, int id)
+        public async Task<IActionResult> Delete([FromRoute] int jobId, int id)
         {
             try
             {
